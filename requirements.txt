@@ -1,0 +1,7 @@
+numpy
+scipy
+trimesh
+fast-simplification
+coacd
+mujoco
+pillow

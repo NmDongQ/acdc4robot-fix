@@ -1,0 +1,33 @@
+# acdc4robot-fix
+
+> Fixes for Fusion 360 -> URDF export with the ACDC4Robot add-in, plus a
+> post-processing script (fix_acdc_export.py) that makes the URDF load in
+> MuJoCo / Isaac Sim / web viewers and adds convex-decomposition collision.
+> Repository: https://github.com/NmDongQ/acdc4robot-fix
+
+## When to use this
+- ACDC4Robot exported a URDF that shows nothing in a viewer, has many more links than joints, or whose joints reference links that have no <link> element. Cause: the add-in only treats leaf occurrences as links, so link components that contain sub-components are skipped. Fix: patches/acdc4robot_nested_components.patch (links = occurrences that participate in a joint).
+- Joints appear twice in the URDF (a link with two parents). Fix: dedupe by joint name (patch + script).
+- MuJoCo error "stl_decoder: number of faces should be between 1 and 200000". Fix: script decimates STL > 200k faces to 120k.
+- Only the root link's inertia (CoM / tensor) is rotated relative to its mesh while child links are fine. Cause: ACDC4Robot writes the root link visual in the Fusion world frame but the root inertial in the component frame (link.py get_CoM_sdf vs urdf.py mesh origin). Fix: script step fix_root_inertial: CoM' = R*CoM + t, I' = R*I*R^T with (R,t) = root visual origin.
+- One link rotated 90 deg in every viewer and MuJoCo alike: the Fusion component frame is rotated vs the robot. Fix: --rotate-links base_link,torso --roll 90 (rotates visual/collision/inertial contents, joints untouched). Real fix: re-align component origin in Fusion.
+- Inertia box wrong only in a web viewer (viewer.robotsfan.com) but fine in MuJoCo: viewer ignores inertial origin rpy. Fix: keep inertial rpy 0 and fold rotation into the tensor.
+- Root link mass in viewer = base + fixed-joint child: not a bug, fixed joints are merged.
+- Collision is the full visual mesh: use --collision coacd (CoACD convex decomposition, <=12 pieces/link, <=64 verts/piece; CoACD needs decimate=True for max_ch_vertex to apply) or --collision primitive (box/cylinder/sphere; cylinder only if cross-section is round).
+- Cylinder collision lying sideways at pitch 90 deg: gimbal lock in a naive matrix->rpy; use scipy Rotation.as_euler("xyz").
+
+## Do not
+- Do not flatten sub-components with the Fusion API (BRepBody.moveToComponent raises InternalValidationError: cut_raw(); copyToComponent + delete destroys joints anchored on sub-component geometry).
+
+## Validation the script runs
+single tree, no missing links, no multi-parent links; inertia positive definite and I1+I2>=I3; left/right principal inertia within 3%; MuJoCo load; render PNG rows = visual / collision / overlay.
+
+## Usage
+pip install numpy scipy trimesh fast-simplification coacd mujoco pillow
+python3 fix_acdc_export.py robot/robot.urdf [--collision coacd|primitive|keep] [--rotate-links L1,L2 --roll 90] [--coacd-max-hulls 8] [--no-render]
+Writes robot/robot_fixed.urdf and robot_fixed.png; input untouched; exits non-zero on validation failure.
+
+## Files
+- README.md: symptom -> cause -> fix tables (English)
+- docs/cad2urdf.ko.md: full write-up in Korean including the earlier fusion2URDF attempt (5 defects: cp949 crash, double assembly offset, mesh/inertia frame, com_global ignoring rotation, .obj references)
+- patches/acdc4robot_nested_components.patch: git apply in the ACDC4Robot repo / add-in folder
