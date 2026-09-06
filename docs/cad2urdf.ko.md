@@ -18,15 +18,16 @@
 # 2. 후처리 (약 4분, CoACD 포함)
 cd ~/Desktop/projects/bipedal_droid/sim2real
 python3 fix_acdc_export.py body_GS_RL_vN/body_GS_RL_vN.urdf \
-        --rotate-links=base_link,robot_torso --roll=90
+        --rotate-links=base_link,robot_torso --roll=90 --root-yaw=90
 # 3. 결과: body_GS_RL_vN_fixed.urdf + body_GS_RL_vN_fixed.png (visual/collision/overlay)
 ```
 
 `_fixed.urdf`를 meshes/ 폴더와 함께 Isaac/MuJoCo/뷰어에 넣으면 된다.
 스크립트가 검증(트리·관성·좌우대칭)에 실패하면 파일을 쓰지 않고 `PROBLEM:`을 출력한다.
 
-`--rotate-links ... --roll=90`은 이 로봇 전용이다 (base_link 컴포넌트 좌표계가 로봇
-기준으로 90° 돌아가 있음, §2.6). 다른 로봇은 렌더 PNG를 보고 필요할 때만 준다.
+두 회전 옵션은 이 로봇 전용이다. 다른 로봇은 렌더 PNG를 보고 필요할 때만 준다.
+- `--rotate-links ... --roll=90`: base_link 컴포넌트 좌표계가 로봇 기준으로 90° 돌아가 있음 (§2.4)
+- `--root-yaw=90`: Fusion 월드 기준 전진이 −Y였음. RL 프레임워크 관례(전진 +X, 왼쪽 +Y, 위 +Z)로 맞춤 (§2.9)
 
 아직 남은 것: 조인트 `effort`/`velocity`가 placeholder(10000)다. 실제 모터 스펙
 (RS02, GIM8115)으로 바꿔야 한다.
@@ -205,6 +206,18 @@ v3에서 hip_roll(1.49→0.47)과 thigh(2.36→1.45)에서 각각 1 kg 가까이
 무게라, **모터 부품이 링크 컴포넌트 밖으로 나갔거나 숨김/삭제**됐을 가능성. 패치된
 익스포터는 "조인트에 참여하는 컴포넌트 안"만 내보내므로 바깥 부품은 **경고 없이 빠진다.**
 → Fusion 전체 어셈블리 질량과 대조할 것. (미확인)
+
+### 2.9 전진 방향이 −Y — 루트 프레임 yaw 회전
+
+Isaac Lab, MJX 등 보행 RL 환경은 base 프레임의 **+X가 전진, +Y가 왼쪽, +Z가 위**라고
+가정한다 (ROS REP-103). 속도 커맨드 `lin_vel_x`, 전진 보상, heading이 전부 이 위에 있다.
+export된 URDF는 Fusion 월드축 그대로라 발끝이 −Y, 왼다리가 +X였다 (오른손 좌표계로는
+일관됨 — 좌우 이름은 맞다).
+
+**수정** `--root-yaw=90`: 루트 링크(base_link)의 visual/collision/inertial과 **루트에
+붙은 조인트 3개(좌우 hip_roll, torso)의 origin**을 Rz(90°)로 돌린다. 하위 링크는 조인트를
+따라 전부 같이 돈다. 조인트 `<axis>`는 조인트 프레임 기준이라 건드리지 않는다.
+검증: 발끝 +X, 왼쪽 hip y=+0.060, 오른쪽 y=−0.060.
 
 ---
 

@@ -153,6 +153,19 @@ link using the classification rules from
 volume fill → revolute-axis hint), but only picks a cylinder when the
 cross-section is actually round, so feet stay flat boxes.
 
+### 10. Robot faces +Y (or −Y) instead of +X → velocity commands / rewards are wrong in RL
+
+**Symptom.** The URDF loads fine, but in Isaac Lab / MJX the "forward"
+command makes the robot side-step, or the forward-velocity reward never
+rises. Locomotion frameworks assume the base frame is **+X forward, +Y left,
++Z up** (ROS REP-103); ACDC4Robot exports Fusion's world axes as-is.
+
+**Fix.** `--root-yaw 90` (or whatever angle brings the toes to +X): rotates
+the root link's contents *and the origins of every joint attached to the
+root*, so the whole robot turns; joint axes are in the joint frame and stay
+untouched. Check afterwards that the left leg is at +Y — if it lands at −Y
+your `left_*` / `right_*` names are mirrored.
+
 ### 9. Cylinder collision lying sideways (pitch = ±90°)
 
 **Cause.** Naive rotation-matrix → rpy conversion (`asin`/`atan2`) is wrong at

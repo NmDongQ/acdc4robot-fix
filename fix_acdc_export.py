@@ -58,15 +58,22 @@ def dedupe_joints(root):
     return removed
 
 
+def _rotate_origin(e, Rfix):
+    xyz = np.array([float(v) for v in e.get("xyz", "0 0 0").split()])
+    r, p, y = [float(v) for v in e.get("rpy", "0 0 0").split()]
+    e.set("xyz", "%.9g %.9g %.9g" % tuple(Rfix @ xyz))
+    e.set("rpy", "%.9g %.9g %.9g" % R_to_rpy(Rfix @ rpy_to_R(r, p, y)))
+
+
 def rotate_link_contents(link, Rfix):
     for tag in ("visual", "collision"):
-        e = link.find(tag + "/origin")
-        if e is None:
-            continue
-        xyz = np.array([float(v) for v in e.get("xyz", "0 0 0").split()])
-        r, p, y = [float(v) for v in e.get("rpy", "0 0 0").split()]
-        e.set("xyz", "%.9g %.9g %.9g" % tuple(Rfix @ xyz))
-        e.set("rpy", "%.9g %.9g %.9g" % R_to_rpy(Rfix @ rpy_to_R(r, p, y)))
+        for geom in link.findall(tag):
+            e = geom.find("origin")
+            if e is None:
+                e = ET.SubElement(geom, "origin")
+                e.set("xyz", "0 0 0")
+                e.set("rpy", "0 0 0")
+            _rotate_origin(e, Rfix)
 
     # Inertia: fold the rotation into the tensor (I' = R I R^T) and keep the
     # inertial frame rpy at 0. Some viewers ignore the inertial origin's rpy,
@@ -124,6 +131,31 @@ def fix_root_inertial(root):
                  ("ixy", In[0, 1]), ("ixz", In[0, 2]), ("iyz", In[1, 2])):
         it.set(k, "%.9g" % v)
     return roots[0]
+
+
+def rotate_root_frame(root, Rfix):
+    """Rotate the whole robot by rotating the root link's contents and the
+    origins of every joint attached to the root link. Used to bring the
+    robot to the +X-forward / +Y-left / +Z-up convention that locomotion RL
+    frameworks (Isaac Lab, MJX) assume for velocity commands and rewards."""
+    links = {l.get("name"): l for l in root.findall("link")}
+    children = {j.find("child").get("link") for j in root.findall("joint")}
+    roots = [n for n in links if n not in children]
+    if len(roots) != 1:
+        return None
+    rotate_link_contents(links[roots[0]], Rfix)
+    n = 0
+    for j in root.findall("joint"):
+        if j.find("parent").get("link") != roots[0]:
+            continue
+        o = j.find("origin")
+        if o is None:
+            o = ET.SubElement(j, "origin")
+            o.set("xyz", "0 0 0")
+            o.set("rpy", "0 0 0")
+        _rotate_origin(o, Rfix)   # joint <axis> is in the joint frame: unchanged
+        n += 1
+    return roots[0], n
 
 
 def decimate_meshes(mesh_dir):
@@ -402,6 +434,9 @@ def parse_args():
     p.add_argument("--roll", type=float, default=0.0, help="roll angle in degrees for --rotate-links")
     p.add_argument("--pitch", type=float, default=0.0, help="pitch angle in degrees for --rotate-links")
     p.add_argument("--yaw", type=float, default=0.0, help="yaw angle in degrees for --rotate-links")
+    p.add_argument("--root-yaw", type=float, default=0.0,
+                   help="rotate the whole robot about Z by this many degrees (root link "
+                        "contents + root joints) to get +X forward / +Y left")
     p.add_argument("--coacd-threshold", type=float, default=COACD_THRESHOLD,
                    help="CoACD concavity threshold, lower = tighter fit, more pieces")
     p.add_argument("--coacd-max-hulls", type=int, default=COACD_MAX_HULLS, help="max pieces per link")
@@ -443,6 +478,11 @@ def main():
         missing = set(rotate) - set(rotated)
         if missing:
             print("   WARNING: --rotate-links not found in URDF:", sorted(missing))
+
+    if a.root_yaw:
+        res = rotate_root_frame(root, rpy_to_R(0, 0, math.radians(a.root_yaw)))
+        print("3c. root frame yawed %g deg:" % a.root_yaw,
+              "%s + %d root joints" % res if res else "SKIPPED (no single root)")
 
     if a.collision == "coacd":
         print("3b. collision -> convex decomposition (CoACD) per link:")

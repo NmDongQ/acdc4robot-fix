@@ -15,6 +15,7 @@
 - Root link mass in viewer = base + fixed-joint child: not a bug, fixed joints are merged.
 - Collision is the full visual mesh: use --collision coacd (CoACD convex decomposition, <=12 pieces/link, <=64 verts/piece; CoACD needs decimate=True for max_ch_vertex to apply) or --collision primitive (box/cylinder/sphere; cylinder only if cross-section is round).
 - Cylinder collision lying sideways at pitch 90 deg: gimbal lock in a naive matrix->rpy; use scipy Rotation.as_euler("xyz").
+- Robot forward is +Y/-Y instead of +X, so Isaac Lab / MJX velocity commands and forward reward are wrong: use --root-yaw <deg> (rotates root link contents and every root-attached joint origin; joint axes untouched). Target convention: +X forward, +Y left, +Z up (REP-103). Verify the left leg ends at +Y.
 
 ## Do not
 - Do not flatten sub-components with the Fusion API (BRepBody.moveToComponent raises InternalValidationError: cut_raw(); copyToComponent + delete destroys joints anchored on sub-component geometry).
