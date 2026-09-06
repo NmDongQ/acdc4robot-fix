@@ -18,7 +18,7 @@ Against a checkout of the add-in repository:
 
 ```bash
 git clone https://github.com/ACDC4Robot/Fusion360.git
-cd ACDC4Robot
+cd Fusion360
 git apply /path/to/acdc4robot_nested_components.patch
 # then copy Add-IN/ACDC4Robot into Fusion's add-in folder (see below)
 ```
