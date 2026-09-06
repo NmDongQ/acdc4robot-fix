@@ -120,6 +120,13 @@ the robot; ACDC4Robot trusts component frames.
 collision / inertial *contents* of those links in place; joints untouched.
 The proper fix is re-aligning the component origin in Fusion.
 
+| before — `base_link` and `torso` pitched 90° (motor cylinders point up) | after `--rotate-links base_link,robot_torso --roll 90` |
+|---|---|
+| ![base_link and torso rotated 90 degrees before the fix](docs/base_rotated_before.png) | ![base_link and torso correctly oriented after the fix](docs/base_rotated_after.png) |
+
+The legs are untouched in both images — only the two links' contents were
+rotated, which is why the joints still attach in the same places.
+
 ### 6. Inertia box misaligned only in a web viewer, fine in MuJoCo
 
 **Cause.** Some viewers (e.g. viewer.robotsfan.com) ignore the inertial
