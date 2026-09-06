@@ -274,5 +274,9 @@ sim2real/
 
 ## 6. 공개
 
-패치와 스크립트, 이 문서의 영문판을 GitHub에 공개하고 ACDC4Robot 업스트림에 이슈/PR로
-보고했다. 저장소: https://github.com/NmDongQ/acdc4robot-fix
+패치와 스크립트, 이 문서를 GitHub에 공개하고 ACDC4Robot 업스트림에 보고했다.
+
+- 저장소: https://github.com/NmDongQ/acdc4robot-fix (영문 README는 증상→원인→수정 표, `llms.txt`는 AI 검색용 요약)
+- 업스트림 PR (중첩 컴포넌트 수정, §2.1·2.2): https://github.com/ACDC4Robot/Fusion360/pull/17
+- 업스트림 이슈 (루트 링크 관성 프레임, §2.6): https://github.com/ACDC4Robot/Fusion360/issues/18
+- 업스트림 저장소가 `bionicdl-sustech/ACDC4Robot` → `ACDC4Robot/Fusion360`으로 이전됨 (구 URL은 리다이렉트)

@@ -17,7 +17,7 @@ Made against upstream commit `1acbfc1` (2026-08-23).
 Against a checkout of the add-in repository:
 
 ```bash
-git clone https://github.com/bionicdl-sustech/ACDC4Robot.git
+git clone https://github.com/ACDC4Robot/Fusion360.git
 cd ACDC4Robot
 git apply /path/to/acdc4robot_nested_components.patch
 # then copy Add-IN/ACDC4Robot into Fusion's add-in folder (see below)

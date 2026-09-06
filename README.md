@@ -170,9 +170,16 @@ docs/example_render.png                  what the render output looks like
 llms.txt                                 condensed version for AI assistants
 ```
 
+## Upstream status
+
+- Nested-components fix → PR [ACDC4Robot/Fusion360#17](https://github.com/ACDC4Robot/Fusion360/pull/17)
+- Root-link inertial frame bug → issue [ACDC4Robot/Fusion360#18](https://github.com/ACDC4Robot/Fusion360/issues/18)
+
+Until merged, apply the patch locally (see `patches/README.md`) and run the script.
+
 ## Related
 
-- ACDC4Robot: https://github.com/bionicdl-sustech/ACDC4Robot
+- ACDC4Robot (upstream, moved from `bionicdl-sustech/ACDC4Robot`): https://github.com/ACDC4Robot/Fusion360
 - fusion2URDF (the exporter we used first; its `fit_primitive` rules and `check_inertia.py` are ported here): https://github.com/Adriaeik/fusion2URDF
 - CoACD: https://github.com/SarahWeiii/CoACD
 - URDF+ (closed loops): https://arxiv.org/abs/2411.19753
