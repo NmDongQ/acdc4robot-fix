@@ -20,6 +20,17 @@ Fusion 360 ──ACDC4Robot (+patch)──▶ robot.urdf + meshes/
                                    robot_fixed.urdf  ──▶ MuJoCo / Isaac Lab
 ```
 
+## Result
+
+| CoACD collision (`--collision coacd`) | inertia boxes after the root-link fix |
+|---|---|
+| ![convex-decomposition collision following the mesh](docs/collision_coacd.png) | ![per-link inertia boxes aligned with the meshes](docs/inertia_boxes.png) |
+
+Left: collision geometry is a set of convex pieces per link that follow the
+visual mesh (motor housings, brackets, feet), so self-collision can be
+enabled. Right: inertia boxes of every link — including the root — sit on
+their meshes after the root-link inertial frame fix (#4 below).
+
 ## Quick start
 
 ```bash
