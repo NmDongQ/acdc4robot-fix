@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/NmDongQ/acdc4robot-fix/blob/main/live_validation/fusion_props.schema.json",
+  "title": "ACDC4Robot live Fusion physical-properties dump",
+  "type": "object",
+  "required": [
+    "schema",
+    "units",
+    "accuracy",
+    "document",
+    "summary",
+    "root_component",
+    "links",
+    "joints",
+    "warnings"
+  ],
+  "properties": {
+    "schema": {"const": "fusion_props/v1"},
+    "units": {
+      "const": {
+        "length": "m",
+        "mass": "kg",
+        "volume": "m^3",
+        "inertia": "kg*m^2"
+      }
+    },
+    "accuracy": {"const": "VeryHighCalculationAccuracy"},
+    "document": {
+      "type": "object",
+      "required": ["name", "product_type", "generated_at_utc"],
+      "properties": {
+        "name": {"type": "string"},
+        "product_type": {"type": "string"},
+        "generated_at_utc": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "link_count",
+        "joint_records_seen",
+        "joint_count_unique",
+        "duplicate_joint_record_count",
+        "duplicate_joint_names"
+      ],
+      "properties": {
+        "link_count": {"type": "integer", "minimum": 0},
+        "joint_records_seen": {"type": "integer", "minimum": 0},
+        "joint_count_unique": {"type": "integer", "minimum": 0},
+        "duplicate_joint_record_count": {"type": "integer", "minimum": 0},
+        "duplicate_joint_names": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "root_component": {"$ref": "#/$defs/rootPhysicalProperties"},
+    "links": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/link"}
+    },
+    "joints": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/joint"}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "vector3": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "number"},
+        {"type": "number"},
+        {"type": "number"}
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "nullableVector3": {
+      "oneOf": [
+        {"$ref": "#/$defs/vector3"},
+        {"type": "null"}
+      ]
+    },
+    "inertia": {
+      "type": "object",
+      "required": ["xx", "yy", "zz", "xy", "yz", "xz"],
+      "properties": {
+        "xx": {"type": "number"},
+        "yy": {"type": "number"},
+        "zz": {"type": "number"},
+        "xy": {"type": "number"},
+        "yz": {"type": "number"},
+        "xz": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "transform": {
+      "type": "object",
+      "required": ["storage", "matrix4x4"],
+      "properties": {
+        "storage": {"const": "row-major"},
+        "matrix4x4": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {"type": "number"}
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "rootPhysicalProperties": {
+      "type": "object",
+      "required": ["name", "mass_kg", "volume_m3", "center_of_mass_world_m"],
+      "properties": {
+        "name": {"type": "string"},
+        "mass_kg": {"type": "number"},
+        "volume_m3": {"type": "number"},
+        "center_of_mass_world_m": {"$ref": "#/$defs/vector3"}
+      },
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object",
+      "required": [
+        "name",
+        "occurrence_path",
+        "component_name",
+        "body_visible",
+        "occurrence_visible",
+        "effective_visible",
+        "mass_kg",
+        "volume_m3",
+        "center_of_mass_world_m"
+      ],
+      "properties": {
+        "name": {"type": "string"},
+        "occurrence_path": {"type": "string"},
+        "component_name": {"type": "string"},
+        "body_visible": {"type": "boolean"},
+        "occurrence_visible": {"type": "boolean"},
+        "effective_visible": {"type": "boolean"},
+        "mass_kg": {"type": "number"},
+        "volume_m3": {"type": "number"},
+        "center_of_mass_world_m": {"$ref": "#/$defs/vector3"}
+      },
+      "additionalProperties": false
+    },
+    "link": {
+      "type": "object",
+      "required": [
+        "full_path_name",
+        "component_name",
+        "urdf_name",
+        "transform_local_to_world",
+        "visible",
+        "mass_kg",
+        "volume_m3",
+        "center_of_mass_world_m",
+        "inertia_com_world_kg_m2",
+        "bodies"
+      ],
+      "properties": {
+        "full_path_name": {"type": "string"},
+        "component_name": {"type": "string"},
+        "urdf_name": {"type": "string"},
+        "transform_local_to_world": {"$ref": "#/$defs/transform"},
+        "visible": {"type": "boolean"},
+        "mass_kg": {"type": "number"},
+        "volume_m3": {"type": "number"},
+        "center_of_mass_world_m": {"$ref": "#/$defs/vector3"},
+        "inertia_com_world_kg_m2": {"$ref": "#/$defs/inertia"},
+        "bodies": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/body"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "joint": {
+      "type": "object",
+      "required": [
+        "name",
+        "type",
+        "occurrence_one_path",
+        "occurrence_two_path",
+        "origin_world_m",
+        "axis_world_unit"
+      ],
+      "properties": {
+        "name": {"type": "string"},
+        "type": {"type": "string"},
+        "occurrence_one_path": {"type": ["string", "null"]},
+        "occurrence_two_path": {"type": ["string", "null"]},
+        "origin_world_m": {"$ref": "#/$defs/nullableVector3"},
+        "axis_world_unit": {"$ref": "#/$defs/nullableVector3"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -212,7 +212,8 @@ llms.txt                                 condensed version for AI assistants
 - Live Fusion mesh/mass/inertia validation remains the upstream gate before
   general nested MJCF support can be claimed; nested MJCF intentionally fails
   preflight while URDF is being validated with a 12-link biped and a small
-  public fixture.
+  public fixture. The reproducible fixture, Fusion dump script, JSON schema,
+  and measured results are in [`live_validation/`](live_validation/).
 - The root-link inertial frame bug remains open as
   [ACDC4Robot/Fusion360#18](https://github.com/ACDC4Robot/Fusion360/issues/18),
   so `fix_root_inertial` is still needed until that fix is released.
