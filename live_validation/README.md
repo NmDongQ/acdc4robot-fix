@@ -58,6 +58,11 @@ base is 70 cm3 for all bodies versus 64 cm3 for visible bodies only.
 The private biped itself is not published. Its numeric results on
 `main@f1152d7` are:
 
+![12-link biped assembly used for live Fusion validation](biped_fusion_validation.png)
+
+The screenshot is public to show the scale and nested mechanical structure of
+the test assembly; the source Fusion design and exported meshes remain private.
+
 - URDF structure: 12 links, 11 joints, one connected tree.
 - Joint discovery: 11 records, 11 unique API objects, 0 duplicates.
 - Mass ownership: all 12 occurrence masses equal their owned-body sums; no body
