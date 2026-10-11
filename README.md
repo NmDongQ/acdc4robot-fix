@@ -36,7 +36,7 @@ their meshes after the root-link inertial frame fix (#4 below).
 ```bash
 pip install numpy scipy trimesh fast-simplification coacd mujoco pillow
 
-# 1. (once) patch the add-in — see patches/README.md
+# 1. install current ACDC4Robot main (older releases need patches/README.md)
 # 2. export from Fusion 360 with ACDC4Robot (URDF)
 # 3. post-process
 python3 fix_acdc_export.py my_robot/my_robot.urdf
@@ -203,10 +203,27 @@ llms.txt                                 condensed version for AI assistants
 
 ## Upstream status
 
-- Nested-components fix → PR [ACDC4Robot/Fusion360#17](https://github.com/ACDC4Robot/Fusion360/pull/17)
-- Root-link inertial frame bug → issue [ACDC4Robot/Fusion360#18](https://github.com/ACDC4Robot/Fusion360/issues/18)
+- The nested-components discovery fix was merged in
+  [ACDC4Robot/Fusion360#17](https://github.com/ACDC4Robot/Fusion360/pull/17)
+  on 2026-10-04 (`f1152d7`). Upstream rewrote the discovery around joint
+  endpoint occurrence identity and rigid-subtree ownership, with fail-closed
+  overlap/unowned-geometry checks and 32 mock-based regression tests. Current
+  `main` no longer needs this repository's historical nested-component patch.
+- Live Fusion mesh/mass/inertia validation remains the upstream gate before
+  general nested MJCF support can be claimed; nested MJCF intentionally fails
+  preflight while URDF is being validated with a 12-link biped and a small
+  public fixture. The reproducible fixture, Fusion dump script, JSON schema,
+  and measured results are in [`live_validation/`](live_validation/).
+- The root-link inertial frame bug remains open as
+  [ACDC4Robot/Fusion360#18](https://github.com/ACDC4Robot/Fusion360/issues/18),
+  so `fix_root_inertial` is still needed until that fix is released.
+- Mesh decimation for simulator face limits and collision generation
+  (`--collision coacd|primitive`) are downstream policies, not part of PR #17,
+  and remain useful even with current upstream `main`.
 
-Until merged, apply the patch locally (see `patches/README.md`) and run the script.
+Use `patches/README.md` only with an older ACDC4Robot release. For current
+`main`, keep using `fix_acdc_export.py` for #18, high-face-count meshes, and
+collision processing as applicable.
 
 ## Related
 
